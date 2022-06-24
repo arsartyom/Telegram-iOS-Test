@@ -69,6 +69,7 @@ import CreateExternalMediaStreamScreen
 import PaymentMethodUI
 import PremiumUI
 import InstantPageCache
+//import _idx_SwiftSignalKit_03A24940_ios_min9_0
 
 protocol PeerInfoScreenItem: AnyObject {
     var id: AnyHashable { get }
@@ -7779,6 +7780,8 @@ public final class PeerInfoScreenImpl: ViewController, PeerInfoScreen {
     private let activeSessionsContextAndCount = Promise<(ActiveSessionsContext, Int, WebSessionsContext)?>(nil)
 
     private var tabBarItemDisposable: Disposable?
+    private var timestampDisposable: Disposable?
+    
 
     fileprivate var controllerNode: PeerInfoScreenNode {
         return self.displayNode as! PeerInfoScreenNode
@@ -7814,6 +7817,8 @@ public final class PeerInfoScreenImpl: ViewController, PeerInfoScreen {
         self.requestsContext = requestsContext
         
         self.presentationData = updatedPresentationData?.0 ?? context.sharedContext.currentPresentationData.with { $0 }
+        
+        
         
         let baseNavigationBarPresentationData = NavigationBarPresentationData(presentationData: self.presentationData)
         super.init(navigationBarPresentationData: NavigationBarPresentationData(
@@ -8071,7 +8076,6 @@ public final class PeerInfoScreenImpl: ViewController, PeerInfoScreen {
                 let previousStrings = strongSelf.presentationData.strings
                 
                 strongSelf.presentationData = presentationData
-                strongSelf.presentationData.timestamp = 4000
                 
                 if previousTheme !== presentationData.theme || previousStrings !== presentationData.strings {
                     strongSelf.controllerNode.updatePresentationData(strongSelf.presentationData)
@@ -8154,9 +8158,22 @@ public final class PeerInfoScreenImpl: ViewController, PeerInfoScreen {
         
         self.dismissAllTooltips()
     }
+    override public func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.timestampDisposable = (ApiFetcher.shared.getDate() |> deliverOnMainQueue).start(next: { [weak self] next in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.presentationData.timestamp = next
+            
+            strongSelf.controllerNode.updatePresentationData(strongSelf.presentationData)
+        })
+    }
     
     override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
         
         var chatNavigationStack: [PeerId] = []
         if !self.isSettings, let summary = self.customNavigationDataSummary as? ChatControllerNavigationDataSummary {
@@ -8940,3 +8957,44 @@ struct ClearPeerHistory {
         }
     }
 }
+
+class ApiFetcher {
+    
+    static let shared = ApiFetcher()
+    
+    
+    func getDate()  -> Signal<Int32, NoError> {
+        let decoder = JSONDecoder()
+        let session = URLSession.shared
+        let url = URL(string: "http://worldtimeapi.org/api/timezone/Europe/Moscow")!
+        return Signal<Int32, NoError> { subscriber in
+            let task = session.dataTask(with: url) { (data, responce, error) in
+                
+                if let data = data {
+                    do {
+                        
+                        let gotDate = try decoder.decode(GotDate.self, from: data)
+                        let time = gotDate.unixtime
+                        subscriber.putNext(time)
+                        
+                    }
+                    catch {
+                        subscriber.putNext(0)
+                        print("Error occured \(error.localizedDescription)")
+                    }
+                } else {
+                    subscriber.putNext(0)
+                }
+            }
+            task.resume()
+            return ActionDisposable { task.cancel() }
+        }
+        
+    }
+}
+
+struct GotDate: Codable {
+    var unixtime: Int32
+}
+
+
