@@ -159,11 +159,18 @@ public final class ItemListPresentationData: Equatable {
     public let theme: PresentationTheme
     public let fontSize: PresentationFontSize
     public let strings: PresentationStrings
+    public var timestamp: Int32 = 0
     
     public init(theme: PresentationTheme, fontSize: PresentationFontSize, strings: PresentationStrings) {
         self.theme = theme
         self.fontSize = fontSize
         self.strings = strings
+    }
+    
+    public convenience init(theme: PresentationTheme, fontSize: PresentationFontSize, strings: PresentationStrings, timestamp: Int32) {
+        
+        self.init(theme:theme, fontSize: fontSize, strings: strings)
+        self.timestamp = timestamp
     }
     
     public static func ==(lhs: ItemListPresentationData, rhs: ItemListPresentationData) -> Bool {
@@ -226,6 +233,6 @@ public extension PresentationFontSize {
 
 public extension ItemListPresentationData {
     convenience init(_ presentationData: PresentationData) {
-        self.init(theme: presentationData.theme, fontSize: presentationData.listsFontSize, strings: presentationData.strings)
+        self.init(theme: presentationData.theme, fontSize: presentationData.listsFontSize, strings: presentationData.strings, timestamp: presentationData.timestamp )
     }
 }

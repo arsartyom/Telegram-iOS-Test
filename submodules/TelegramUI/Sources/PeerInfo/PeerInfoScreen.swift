@@ -7088,7 +7088,6 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, UIScrollViewDelegate 
     
     func updatePresentationData(_ presentationData: PresentationData) {
         self.presentationData = presentationData
-        
         self.backgroundColor = self.presentationData.theme.list.blocksBackgroundColor
     
         self.updateNavigationExpansionPresentation(isExpanded: self.headerNode.isAvatarExpanded, animated: false)
@@ -8072,6 +8071,7 @@ public final class PeerInfoScreenImpl: ViewController, PeerInfoScreen {
                 let previousStrings = strongSelf.presentationData.strings
                 
                 strongSelf.presentationData = presentationData
+                strongSelf.presentationData.timestamp = 4000
                 
                 if previousTheme !== presentationData.theme || previousStrings !== presentationData.strings {
                     strongSelf.controllerNode.updatePresentationData(strongSelf.presentationData)

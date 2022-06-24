@@ -90,6 +90,7 @@ public final class PresentationData: Equatable {
     public let nameSortOrder: PresentationPersonNameOrder
     public let reduceMotion: Bool
     public let largeEmoji: Bool
+    public var timestamp: Int32 = 0
     
     public init(strings: PresentationStrings, theme: PresentationTheme, autoNightModeTriggered: Bool, chatWallpaper: TelegramWallpaper, chatFontSize: PresentationFontSize, chatBubbleCorners: PresentationChatBubbleCorners, listsFontSize: PresentationFontSize, dateTimeFormat: PresentationDateTimeFormat, nameDisplayOrder: PresentationPersonNameOrder, nameSortOrder: PresentationPersonNameOrder, reduceMotion: Bool, largeEmoji: Bool) {
         self.strings = strings
